@@ -6,33 +6,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-100">
-        {/* Navigation */}
-        <nav className="bg-white shadow-lg">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center h-16">
-              <Link to="/" className="flex items-center gap-2">
-                <Home className="w-6 h-6 text-blue-600" />
-                <span className="text-xl font-bold text-gray-800">Guías Comerciales</span>
-              </Link>
-              <div className="flex gap-4">
-                <Link to="/dealer-movil" className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
-                  <Smartphone className="w-5 h-5" />
-                  Dealer Móvil
-                </Link>
-                <Link to="/tiendas" className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
-                  <Store className="w-5 h-5" />
-                  Tiendas
-                </Link>
-                <Link to="/fvd" className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
-                  <Users className="w-5 h-5" />
-                  FVD
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
-
-        {/* Routes */}
+        {/* Routes sin navegación global */}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/dealer-movil/*" element={<DealerMovil />} />
@@ -46,25 +20,60 @@ function App() {
 
 function HomePage() {
   return (
-    <div className="max-w-7xl mx-auto p-8">
-      <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-        <h1 className="text-5xl font-bold text-gray-800 mb-4">Bienvenido a Guías Comerciales</h1>
-        <p className="text-xl text-gray-600 mb-8">Selecciona una unidad de negocio para comenzar</p>
-        <div className="grid md:grid-cols-3 gap-6 mt-12">
-          <Link to="/dealer-movil" className="p-8 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors border-2 border-blue-200 hover:scale-105 transform duration-200">
-            <Smartphone className="w-16 h-16 mx-auto mb-4 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Dealer Móvil</h2>
-            <p className="text-gray-600 mt-2">Facturación Pospago, Combinaciones y más</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="max-w-7xl w-full">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Home className="w-12 h-12 text-blue-600" />
+            <h1 className="text-6xl font-bold text-gray-800">Guías Comerciales</h1>
+          </div>
+          <p className="text-2xl text-gray-600">Selecciona una unidad de negocio</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          <Link 
+            to="/dealer-movil" 
+            className="group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105"
+          >
+            <div className="p-10 text-center">
+              <div className="bg-blue-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors">
+                <Smartphone className="w-12 h-12 text-blue-600" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors">
+                Dealer Móvil
+              </h2>
+              <p className="text-gray-600">Facturación Pospago, Combinaciones y más</p>
+            </div>
           </Link>
-          <Link to="/tiendas" className="p-8 bg-green-50 rounded-xl hover:bg-green-100 transition-colors border-2 border-green-200 hover:scale-105 transform duration-200">
-            <Store className="w-16 h-16 mx-auto mb-4 text-green-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Tiendas</h2>
-            <p className="text-gray-600 mt-2">Próximamente</p>
+
+          <Link 
+            to="/tiendas" 
+            className="group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105"
+          >
+            <div className="p-10 text-center">
+              <div className="bg-green-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors">
+                <Store className="w-12 h-12 text-green-600" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-3 group-hover:text-green-600 transition-colors">
+                Tiendas
+              </h2>
+              <p className="text-gray-600">Próximamente</p>
+            </div>
           </Link>
-          <Link to="/fvd" className="p-8 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors border-2 border-purple-200 hover:scale-105 transform duration-200">
-            <Users className="w-16 h-16 mx-auto mb-4 text-purple-600" />
-            <h2 className="text-2xl font-bold text-gray-800">FVD</h2>
-            <p className="text-gray-600 mt-2">Próximamente</p>
+
+          <Link 
+            to="/fvd" 
+            className="group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105"
+          >
+            <div className="p-10 text-center">
+              <div className="bg-purple-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-200 transition-colors">
+                <Users className="w-12 h-12 text-purple-600" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-3 group-hover:text-purple-600 transition-colors">
+                FVD
+              </h2>
+              <p className="text-gray-600">Próximamente</p>
+            </div>
           </Link>
         </div>
       </div>
@@ -74,17 +83,19 @@ function HomePage() {
 
 function ComingSoon({ title }) {
   return (
-    <div className="max-w-7xl mx-auto p-8">
-      <Link 
-        to="/" 
-        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold mb-6 transition-colors"
-      >
-        <Home className="w-5 h-5" />
-        Volver al inicio
-      </Link>
-      <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">{title}</h1>
-        <p className="text-xl text-gray-600">Esta sección estará disponible próximamente</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-8">
+      <div className="max-w-2xl w-full">
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold mb-8 text-lg transition-colors"
+        >
+          <Home className="w-6 h-6" />
+          Volver al inicio
+        </Link>
+        <div className="bg-white rounded-2xl shadow-xl p-16 text-center">
+          <h1 className="text-5xl font-bold text-gray-800 mb-6">{title}</h1>
+          <p className="text-2xl text-gray-600">Este módulo estará disponible próximamente</p>
+        </div>
       </div>
     </div>
   );
