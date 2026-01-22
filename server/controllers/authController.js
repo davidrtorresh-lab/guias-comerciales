@@ -1,11 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const pool = require('../config/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'guias-comerciales-secret-key-2026';
-
-// Base de datos simulada (en producción usarías una BD real)
-let users = [];
-let pendingUsers = [];
 
 // Función para generar token JWT
 const generateToken = (user) => {
@@ -33,10 +30,12 @@ const register = async (req, res) => {
     }
 
     // Verificar si el correo ya existe
-    const existingUser = users.find(u => u.correo === correo);
-    const existingPending = pendingUsers.find(u => u.correo === correo);
+    const existingUser = await pool.query(
+      'SELECT * FROM users WHERE correo = $1',
+      [correo]
+    );
     
-    if (existingUser || existingPending) {
+    if (existingUser.rows.length > 0) {
       return res.status(400).json({ error: 'El correo ya está registrado' });
     }
 
@@ -44,31 +43,23 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Crear usuario pendiente
-    const newUser = {
-      id: Date.now().toString(),
-      nombre,
-      canal,
-      rol,
-      telefono,
-      correo,
-      password: hashedPassword,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-
-    pendingUsers.push(newUser);
+    const userId = Date.now().toString();
+    await pool.query(
+      'INSERT INTO users (id, nombre, canal, rol, telefono, correo, password, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [userId, nombre, canal, rol, telefono, correo, hashedPassword, 'pending']
+    );
 
     // Notificar al bot de Telegram (si está configurado)
     try {
       const { notifyNewRegistration } = require('../bot/telegramBot');
-      notifyNewRegistration(newUser);
+      notifyNewRegistration({ id: userId, nombre, correo, telefono, canal, rol, createdAt: new Date().toISOString() });
     } catch (error) {
       console.log('Bot de Telegram no disponible');
     }
 
     res.status(201).json({ 
       message: 'Solicitud de registro enviada. Espera la aprobación del administrador.',
-      userId: newUser.id
+      userId
     });
   } catch (error) {
     console.error('Error en registro:', error);
@@ -87,11 +78,16 @@ const login = async (req, res) => {
     }
 
     // Buscar usuario
-    const user = users.find(u => u.correo === correo);
+    const result = await pool.query(
+      'SELECT * FROM users WHERE correo = $1',
+      [correo]
+    );
 
-    if (!user) {
+    if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
+
+    const user = result.rows[0];
 
     // Verificar si está activo
     if (user.status !== 'active') {
@@ -139,30 +135,58 @@ const verifyToken = (req, res) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = users.find(u => u.id === decoded.id);
+    
+    pool.query(
+      'SELECT * FROM users WHERE id = $1 AND status = $2',
+      [decoded.id, 'active']
+    ).then(result => {
+      if (result.rows.length === 0) {
+        return res.status(401).json({ error: 'Token inválido' });
+      }
 
-    if (!user || user.status !== 'active') {
-      return res.status(401).json({ error: 'Token inválido' });
-    }
+      const user = result.rows[0];
+      const userData = {
+        id: user.id,
+        nombre: user.nombre,
+        canal: user.canal,
+        rol: user.rol,
+        telefono: user.telefono,
+        correo: user.correo
+      };
 
-    const userData = {
-      id: user.id,
-      nombre: user.nombre,
-      canal: user.canal,
-      rol: user.rol,
-      telefono: user.telefono,
-      correo: user.correo
-    };
-
-    res.json({ user: userData });
+      res.json({ user: userData });
+    }).catch(err => {
+      console.error('Error verificando token:', err);
+      res.status(401).json({ error: 'Token inválido' });
+    });
   } catch (error) {
     res.status(401).json({ error: 'Token inválido o expirado' });
   }
 };
 
 // Obtener usuarios pendientes (para admin)
-const getPendingUsers = (req, res) => {
-  res.json({ pendingUsers });
+const getPendingUsers = async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, nombre, canal, rol, telefono, correo, created_at FROM users WHERE status = $1 ORDER BY created_at DESC',
+      ['pending']
+    );
+
+    const pendingUsers = result.rows.map(user => ({
+      id: user.id,
+      nombre: user.nombre,
+      canal: user.canal,
+      rol: user.rol,
+      telefono: user.telefono,
+      correo: user.correo,
+      createdAt: user.created_at
+    }));
+
+    res.json({ pendingUsers });
+  } catch (error) {
+    console.error('Error obteniendo pendientes:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
 };
 
 // Aprobar usuario
@@ -170,25 +194,18 @@ const approveUser = async (req, res) => {
   try {
     const { userId } = req.body;
 
-    const userIndex = pendingUsers.findIndex(u => u.id === userId);
-    
-    if (userIndex === -1) {
+    const result = await pool.query(
+      'UPDATE users SET status = $1 WHERE id = $2 RETURNING id, nombre, correo',
+      ['active', userId]
+    );
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const user = pendingUsers[userIndex];
-    user.status = 'active';
-    
-    users.push(user);
-    pendingUsers.splice(userIndex, 1);
-
     res.json({ 
       message: 'Usuario aprobado exitosamente',
-      user: {
-        id: user.id,
-        nombre: user.nombre,
-        correo: user.correo
-      }
+      user: result.rows[0]
     });
   } catch (error) {
     console.error('Error aprobando usuario:', error);
@@ -197,17 +214,18 @@ const approveUser = async (req, res) => {
 };
 
 // Rechazar usuario
-const rejectUser = (req, res) => {
+const rejectUser = async (req, res) => {
   try {
     const { userId } = req.body;
 
-    const userIndex = pendingUsers.findIndex(u => u.id === userId);
-    
-    if (userIndex === -1) {
+    const result = await pool.query(
+      'DELETE FROM users WHERE id = $1 AND status = $2 RETURNING id',
+      [userId, 'pending']
+    );
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-
-    pendingUsers.splice(userIndex, 1);
 
     res.json({ message: 'Usuario rechazado' });
   } catch (error) {
@@ -217,18 +235,28 @@ const rejectUser = (req, res) => {
 };
 
 // Obtener todos los usuarios activos
-const getUsers = (req, res) => {
-  const userList = users.map(u => ({
-    id: u.id,
-    nombre: u.nombre,
-    canal: u.canal,
-    rol: u.rol,
-    telefono: u.telefono,
-    correo: u.correo,
-    status: u.status
-  }));
-  
-  res.json({ users: userList });
+const getUsers = async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, nombre, canal, rol, telefono, correo, status FROM users WHERE status = $1 ORDER BY nombre',
+      ['active']
+    );
+
+    const users = result.rows.map(user => ({
+      id: user.id,
+      nombre: user.nombre,
+      canal: user.canal,
+      rol: user.rol,
+      telefono: user.telefono,
+      correo: user.correo,
+      status: user.status
+    }));
+
+    res.json({ users });
+  } catch (error) {
+    console.error('Error obteniendo usuarios:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
 };
 
 module.exports = {

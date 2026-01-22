@@ -1,13 +1,22 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+const pool = require('./config/database');
+
 
 const authRoutes = require('./routes/authRoutes');
 const { initBot } = require('./bot/telegramBot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Inicializar conexión a PostgreSQL
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('❌ Error conectando a PostgreSQL:', err);
+  }
+});
 
 // Middlewares
 app.use(cors());
