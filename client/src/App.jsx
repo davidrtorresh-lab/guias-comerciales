@@ -7,6 +7,7 @@ import Register from './components/Register';
 import AdminPanel from './components/AdminPanel';
 import { Home, Smartphone, Store, Users, User, Building2, Briefcase, Phone, Mail, LogOut } from 'lucide-react';
 import DealerMovil from './modules/DealerMovil/DealerMovil';
+import TiendasPage from './modules/Tiendas/TiendasPage'; // <--- NUEVO IMPORT
 import { useAuth } from './contexts/AuthContext';
 
 function App() {
@@ -26,16 +27,22 @@ function App() {
               <AdminPanel />
             </ProtectedRoute>
           } />
+          
+          {/* Módulo Dealer Móvil */}
           <Route path="/dealer-movil/*" element={
             <ProtectedRoute requiredCanal="DEALER MOVIL">
               <DealerMovil />
             </ProtectedRoute>
           } />
+
+          {/* Módulo Tiendas (ACTUALIZADO) */}
           <Route path="/tiendas" element={
             <ProtectedRoute requiredCanal="TIENDA">
-              <ComingSoon title="Tiendas" canal="TIENDA" />
+              <TiendasPage />
             </ProtectedRoute>
           } />
+
+          {/* Módulo FVD (Aún pendiente) */}
           <Route path="/fvd" element={
             <ProtectedRoute requiredCanal="FVD">
               <ComingSoon title="FVD" canal="FVD" />
@@ -70,7 +77,7 @@ function HomePage() {
     {
       id: 'tiendas',
       title: 'Tiendas',
-      description: 'Próximamente',
+      description: 'Ofertas Hogar, Móvil y Tácticos', // Actualizado descripción
       icon: Store,
       path: '/tiendas',
       color: 'green',
