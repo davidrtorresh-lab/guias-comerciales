@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Calendar, AlertCircle, CheckCircle, Clock, FileText, Users, Smartphone } from 'lucide-react';
+import { Calendar, AlertCircle, CheckCircle, Clock, FileText, Users, Smartphone, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function FacturacionPospago() {
   const [selectedDate, setSelectedDate] = useState('');
@@ -94,12 +95,23 @@ export default function FacturacionPospago() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Facturación Pospago</h1>
-          <p className="text-gray-600">Dealer Móvil - Calculadora de Ciclos y Guía Interactiva</p>
+        {/* Botón de navegación - Mismo estilo que en DealerMovil.jsx */}
+        <div className="mb-8">
+          <Link 
+            to="/dealer-movil" 
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Volver a Dealer Móvil
+          </Link>
+          
+          {/* Header */}
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">Facturación Pospago</h1>
+            <p className="text-gray-600">Dealer Móvil - Calculadora de Ciclos y Guía Interactiva</p>
+          </div>
         </div>
 
         {/* Tipos de Transacción */}
