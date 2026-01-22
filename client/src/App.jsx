@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Register from './components/Register';
+import AdminPanel from './components/AdminPanel';
 import { Home, Smartphone, Store, Users, User, Building2, Briefcase, Phone, Mail, LogOut } from 'lucide-react';
 import DealerMovil from './modules/DealerMovil/DealerMovil';
 import { useAuth } from './contexts/AuthContext';
@@ -18,6 +19,11 @@ function App() {
           <Route path="/" element={
             <ProtectedRoute>
               <HomePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminPanel />
             </ProtectedRoute>
           } />
           <Route path="/dealer-movil/*" element={
@@ -83,7 +89,7 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header con botón de perfil */}
+      {/* Header con botón de perfil y admin */}
       <div className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -95,14 +101,28 @@ function HomePage() {
               </div>
             </div>
             
-            {/* Botón de perfil */}
-            <button
-              onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              <User className="w-5 h-5" />
-              <span className="hidden md:inline">Mi Perfil</span>
-            </button>
+            {/* Botones de navegación */}
+            <div className="flex items-center gap-3">
+              {/* Botón de perfil */}
+              <button
+                onClick={() => setShowProfile(!showProfile)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                <User className="w-5 h-5" />
+                <span className="hidden md:inline">Mi Perfil</span>
+              </button>
+              
+              {/* Botón de Admin (solo para Desarrolladores) */}
+              {user.correo === 'davidrtorresh@gmail.com' && (
+                <Link
+                  to="/admin"
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Users className="w-5 h-5" />
+                  <span className="hidden md:inline">Admin</span>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
